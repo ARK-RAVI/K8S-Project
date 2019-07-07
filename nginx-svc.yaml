@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+  name: ark-nginx
+spec:
+  ports:
+  - name: "80"
+    port: 80
+    targetPort: 8080
+  selector:
+status:
+  loadBalancer: {}

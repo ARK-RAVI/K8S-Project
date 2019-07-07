@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  generation: 1
+  labels:
+    app: my-nginx
+  name: my-nginx
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: my-nginx
+  strategy:
+    rollingUpdate:
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: my-nginx
+  strategy:
+    rollingUpdate:
+      maxSurge: 1 
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: my-nginx
+    spec:
+      containers:
+      - image: rkarigela/ark-ngix.v2
+        imagePullPolicy: Always
+        name: nginx
