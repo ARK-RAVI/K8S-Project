@@ -1,0 +1,102 @@
+K8s- Master-Worker Node configuration on Ubuntu 18.4
+
+Created 3 VM's 
+k8s-master
+k8s-node1  
+k8s-node2
+
+Step 1:-
+------
+Updated hostnames (In all 3 VM's)
+sudo vi /etc/hostname
+10.156.0.2 k8s-master
+10.156.0.3 k8s-node2
+10.156.0.4 k8s-node1
+
+
+Step 2:-
+------
+apt install -u docker.io
+
+cat << EOF > /etc/docker/daemon.json
+{
+"exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF
+
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - 
+
+cat << EOF > /etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+apt update
+
+apt install -y kubelet kubeadm kubectl
+
+
+Step 3:-
+------
+kubeadm init --pod-network-cidr=192.168.0.0/16
+
+"save this output for later"
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 10.156.0.2:6443 --token fixbjv.box8jg8ultytufqw \
+    --discovery-token-ca-cert-hash sha256:768782f7717ecb34758937672463d50cbea3b0b74af0f1f4a69e927820b0cba1
+
+Step 4:-
+------
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) /home/kube/.kube/config 
+
+Step 5:-
+------
+kubectl get pods --all-namespaces
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+kubectl get pods --all-namespaces
+kubectl get pods
+kubectl get nodes
+
+
+On Worker Nodes
+---------------
+Step 1:-
+
+apt install -u docker.io
+
+cat << EOF > /etc/docker/daemon.json
+{
+"exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF
+
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - 
+
+cat << EOF > /etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+apt update
+
+apt install -y kubelet kubeadm kubectl
+
+
+Step 2:-
+-------
+kubeadm join 192.168.122.215:6443 --token dzcn2t.vr3puihu3o0b4aky --discovery-token-ca-cert-hash sha256:c7afb7bb820bb967d70788376ff6c3589478dc19844c8458419e39fea9c75032
+
+
+Ste 3:-
+-------
+
+Verify cluster status using 
+kubectl get nodes
+
+arigela19@k8s-master:~$ kubectl get nodes
+NAME         STATUS   ROLES    AGE     VERSION
+k8s-master   Ready    master   7h11m   v1.15.0
+k8s-node1    Ready    <none>   7h4m    v1.15.0
+k8s-node2    Ready    <none>   7h4m    v1.15.0
